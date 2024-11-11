@@ -139,7 +139,8 @@ class RequestProcessor
                                 if (!empty($info["file_validation_url_http"]??'')){
                                      $path = parse_url($info["file_validation_url_http"], PHP_URL_PATH);
                                      $filename = basename($path);
-                                     echo $options->targetPath. dirname($path);
+
+                                     echo 'mkdir path'. $options->targetPath. dirname($path);
                                     mkdir( $options->targetPath. dirname($path),0777,true);
                                     file_put_contents( $options->targetPath.$path,implode("\n",$info["file_validation_content"]));
                                 }
