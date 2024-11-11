@@ -16,7 +16,7 @@ class Options
     public ?CertificateValidationType $validationType;
     public array $validationEmail;
     public bool $csrOnly;
-    public bool $createOnly;
+    public bool $createOnly=false;
     public bool $useEccDefaults;
     public array $privateKeyOptions;
     public array $csrData;

@@ -188,9 +188,8 @@ class RequestProcessor
                         if(trim($line) === 'VERIFY'){
                             fclose($handle);
                             $verificationResult = self::zeroSign($hash,$options,true);
-                            if(!is_null($verificationResult)) {
-                                $result = array_merge($result,$verificationResult);
-                            }
+                            if(!is_null($verificationResult)) $result = array_merge($result,$verificationResult);
+
                         } else {
                             echo "\nCertificate will not be signed for now. Continue with verification in the CLI seperatly or continue in your ZeroSSL dashboard: https://app.zerossl.com/certificate/verify/".$hash;
                             fclose($handle);
@@ -354,7 +353,7 @@ class RequestProcessor
         if(!$options->noOut) {
             echo "Generator started.\n";
         }
-        self::generate($options);
+        self::generate($options,true);
 
         if(!$options->noOut) {
             echo "\nAll done. Script exiting 🐆\n";
