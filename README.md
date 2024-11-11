@@ -7,9 +7,9 @@ sudo mv composer.phar /usr/local/bin/composer
 git clone git@github.com:tig3306/zerossl.git
 cd zerossl
 composer update -vvv
-composer install -vvv
+echo yes|composer install -vvv
 D="47.236.97.31"
-cd cli-client&&php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/${D}" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
+php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/${D}" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
 ```
 
 
