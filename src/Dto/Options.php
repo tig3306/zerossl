@@ -4,8 +4,7 @@ namespace ZeroSSL\CliClient\Dto;
 
 use ZeroSSL\CliClient\Enum\CertificateValidationType;
 
-class Options
-{
+class Options{
     public array $domains;
     public string $privateKeyPassword;
     public bool $noOut;
@@ -24,4 +23,6 @@ class Options
     public int $validityDays;
     public bool $includeCrossSigned;
     public string $debug = "";
+    public string $fPrivate = "private.key";
+    public string $fhash = "hash.txt";
 }
