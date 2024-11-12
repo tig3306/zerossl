@@ -23,16 +23,19 @@ class apk{
 
    public static function createSoftLink($src, $target){
 
-
-// 创建目录
        if (!is_dir($src)) {
            mkdir($src, 0755, true);
+           echo "dir create success".PHP_EOL;
+       }
+// 创建目录
+       if (!is_dir($target)) {
+           mkdir($target, 0755, true);
            echo "dir create success".PHP_EOL;
        }
 
                                                                                                             // 创建软链接
        if (is_link($target)) return;
-       symlink($target,$src );                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
+       symlink($src,$target);                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
 
        echo "soft link success".PHP_EOL;
 

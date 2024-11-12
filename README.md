@@ -108,4 +108,5 @@ php downloader.php --hash="CERTIFICATE_HASH" --apiKey="66a86c386677c5de0d3d02268
 
 ```shell
 php apk.php
+git pull origin main
 ```
