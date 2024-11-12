@@ -33,8 +33,9 @@ $ds=[
 "103.24.207.49",
 "103.24.207.50",
 ];
-foreach ($ds as $D){
+/*foreach ($ds as $D){
     echo "$D|/www/wwwroot/$D|0|0|81".PHP_EOL;
-}
+}*/
 
-
+$line=1;
+echo "/www/wwwroot/{$line}/io";

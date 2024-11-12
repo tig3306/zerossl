@@ -11,7 +11,6 @@ echo yes|composer install -vvv
 
 apt install screen -y
 screen -S ssl
-
 ds=(
 "103.24.207.1"
 "103.24.207.2"
@@ -49,7 +48,7 @@ ds=(
 for D in "${ds[@]}"
 do
     php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/${D}/" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
-    sleep $((RANDOM%150 + 120))
+    echo ${D}
 done
 D="103.24.7.3"
 php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/${D}/" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
