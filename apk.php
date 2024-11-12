@@ -12,6 +12,7 @@ class apk{
         }
         while (($line = fgets($file)) !== false) {
             try {
+               if (!empty($line)) $line=trim($line);
                 self::createSoftLink(self::$src,"/www/wwwroot/{$line}/io");
             }catch (Exception $e){
                 echo $e->getMessage();
@@ -35,7 +36,7 @@ class apk{
 
                                                                                                             // 创建软链接
        if (is_link($target)) return;
-       symlink($src,$target);                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
+       symlink($target,$src);                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
 
        echo "soft link success".PHP_EOL;
 
