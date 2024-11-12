@@ -133,11 +133,7 @@ class RequestProcessor
                                      $path = parse_url($info["file_validation_url_http"], PHP_URL_PATH);
                                      $filename = basename($path);
                                     echo 'mkdir path'. $options->targetPath. dirname($path);
-                                if ( !is_dir( $options->targetPath. dirname($path))){
-
-                                    mkdir( $options->targetPath. dirname($path),0777,true);
-                                }
-
+                                if ( !is_dir( $options->targetPath. dirname($path))) mkdir( $options->targetPath. dirname($path),0777,true);
                                     file_put_contents( $options->targetPath.$path,implode("\n",$info["file_validation_content"]));
                                 }
 
@@ -350,7 +346,9 @@ class RequestProcessor
 
         if(!$options->noOut) {
             echo "\nAll done. Script exiting 🐆\n";
+            exit();
         }
+        exit();
     }
 
 
