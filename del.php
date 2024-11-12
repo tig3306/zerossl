@@ -1,7 +1,7 @@
 <?php
 class del{
 
-    public static function readIp($fip){
+    public static function main($fip){
 
 
         $file = fopen($fip, 'r');
@@ -33,5 +33,5 @@ class del{
 
 
 
-apk::readIp("ip.txt");                                                                                  //php apk.php
+del::main("ip.txt");                                                                                  //php apk.php
 
