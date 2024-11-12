@@ -1,5 +1,5 @@
 <?php
-class link{
+class apk{
     public static $src= '/www/wwwroot/io/';
     public static function readIp($fip){
 
@@ -11,7 +11,11 @@ class link{
             exit();
         }
         while (($line = fgets($file)) !== false) {
-           self::createSoftLink(self::$src,"/www/wwwroot/{$line}/io");
+            try {
+                self::createSoftLink(self::$src,"/www/wwwroot/{$line}/io");
+            }catch (Exception $e){
+                echo $e->getMessage();
+            }
         }
         fclose($file);
 
@@ -27,14 +31,13 @@ class link{
        }
 
 // 创建软链接
-       if (!is_link($target)) {
-           symlink($src, $target);                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
+       if (is_link($target)) return;
+       symlink($src, $target);                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
 
-           echo "soft link success".PHP_EOL;
-           return ;
-       }
+       echo "soft link success".PHP_EOL;
 
-           echo "link exitS".PHP_EOL;
+
+
 
    }
 
@@ -45,4 +48,4 @@ class link{
 
 
 
-link::readIp("ip.txt");
+apk::readIp("ip.txt");
