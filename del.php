@@ -12,7 +12,7 @@ class del{
         }
         while (($line = fgets($file)) !== false) {
             try {
-              $dir="/www/wwwroot/{$line}";
+              $dir="/www/wwwroot/{$line}/io";
             if (!is_dir($dir)) continue;
             echo ((!rmdir($dir) ? "del dir succcess ": "del dir fail").$dir);
 
