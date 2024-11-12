@@ -40,7 +40,7 @@ class RequestProcessor
         $result = [];
         $pkey = CSRTool::generatePrivateKey($options->useEccDefaults, $options->privateKeyOptions);
         openssl_pkey_export($pkey, $pKeyOut, $options->privateKeyPassword);
-        file_put_contents($options->fPrivate,$pKeyOut);
+        //file_put_contents($options->fPrivate,$pKeyOut);
         self::dumpGeneratedContent("PRIVATE KEY", $pKeyOut, !$options->noOut);
 
         if(!empty($options->targetPath)) {
@@ -83,7 +83,7 @@ class RequestProcessor
 
                     if(!$options->noOut) {
                         echo "\nFirst step successfully proceeded 🙂\n";
-                        file_put_contents($options->fhash,$hash);
+                      //  file_put_contents($options->fhash,$hash);
                         self::dumpGeneratedContent("CERTIFICATE HASH",$hash,true);                                      //todo hash
                         echo "\nFirst step successfully initiated. Now lets verify your ownership and sign it 🙂\n";
                     }

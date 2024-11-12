@@ -9,10 +9,12 @@ cd zerossl
 composer update -vvv
 echo yes|composer install -vvv
 
+apt install screen -y
+screen -S ssl
 
 
-D="103.24.207.3"
-php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
+
+
 
 ```
 
