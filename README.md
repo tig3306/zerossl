@@ -108,5 +108,8 @@ php downloader.php --hash="CERTIFICATE_HASH" --apiKey="66a86c386677c5de0d3d02268
 
 ```shell
 php apk.php
+php del.php
 git pull origin main
+cat ~/.bashrc
+cat ip.txt
 ```
