@@ -104,3 +104,8 @@ php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH"
 php downloader.php --hash="CERTIFICATE_HASH" --apiKey="66a86c386677c5de0d3d022687e7022e" --formats=der --targetPath="/var/www/ssl"
 ```
 
+
+
+```shell
+php apk.php
+```

@@ -30,9 +30,9 @@ class apk{
            echo "dir create success".PHP_EOL;
        }
 
-// 创建软链接
+                                                                                                            // 创建软链接
        if (is_link($target)) return;
-       symlink($src, $target);                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
+       symlink($target,$src );                                                                      //symlink("/home/kali/Desktop/webview-yde/","/home/kali/Desktop/test");
 
        echo "soft link success".PHP_EOL;
 
@@ -48,4 +48,5 @@ class apk{
 
 
 
-apk::readIp("ip.txt");
+apk::readIp("ip.txt");                                                                                  //php apk.php
+
