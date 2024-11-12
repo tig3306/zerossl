@@ -14,8 +14,7 @@ class ZeroSSLDownloader
      * @throws Exception\RemoteRequestException
      * @throws \JsonException
      */
-    public static function download(string $apiKey, string $hash, bool $includeCrossSigned = false): array
-    {
+    public static function download(string $apiKey, string $hash, bool $includeCrossSigned = false): array{
         $requester = new ApiEndpointRequester();
 
         return $requester->requestJson($requester->apiEndpointInfo->endpoints['download_certificate_json'],[

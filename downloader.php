@@ -67,10 +67,7 @@ foreach ($formats as $format) {
             file_put_contents($targetPath . DIRECTORY_SEPARATOR . "intermediate" . "." . $format, Converter::fromCrt($certs[0], $format, $key, $keyPass));
             file_put_contents($targetPath . DIRECTORY_SEPARATOR . "cross-sign" . "." . $format, Converter::fromCrt($certs[1], $format, $key, $keyPass));
         } else {
-            file_put_contents(
-                $targetPath . DIRECTORY_SEPARATOR . "ca_bundle" . "." . $format,
-                Converter::fromCrt($certInfo["ca_bundle.crt"], $format, $key, $keyPass)
-            );
+            file_put_contents($targetPath . DIRECTORY_SEPARATOR . "ca_bundle" . "." . $format, Converter::fromCrt($certInfo["ca_bundle.crt"], $format, $key, $keyPass));
         }
     }
 }

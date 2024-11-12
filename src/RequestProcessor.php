@@ -35,17 +35,12 @@ class RequestProcessor
      * @throws NotYetSupportedException
      * @throws JsonException
      */
-    #[ArrayShape([
-        "private_key" => "string",
-        "csr" => "string",
-        "certificate" => "string",
-    ])]
-    public static function generate(Options $options, bool $nonInteractive = false): array
-    {
+    #[ArrayShape(["private_key" => "string", "csr" => "string", "certificate" => "string",])]
+    public static function generate(Options $options, bool $nonInteractive = false): array{
         $result = [];
         $pkey = CSRTool::generatePrivateKey($options->useEccDefaults, $options->privateKeyOptions);
         openssl_pkey_export($pkey, $pKeyOut, $options->privateKeyPassword);
-      //  file_put_contents($options->fPrivate,$pKeyOut);
+        file_put_contents($options->fPrivate,$pKeyOut);
         self::dumpGeneratedContent("PRIVATE KEY", $pKeyOut, !$options->noOut);
 
         if(!empty($options->targetPath)) {
@@ -56,9 +51,8 @@ class RequestProcessor
         openssl_csr_export($csr, $csrOut);
         self::dumpGeneratedContent("CSR", $csrOut, !$options->noOut);
 
-        if(!empty($options->targetPath)) {
-            openssl_csr_export_to_file($csr,$options->targetPath . DIRECTORY_SEPARATOR . "csr" . $options->suffix . ".pem",$options->privateKeyPassword);
-        }
+        if(!empty($options->targetPath)) openssl_csr_export_to_file($csr,$options->targetPath . DIRECTORY_SEPARATOR . "csr" . $options->suffix . ".pem",$options->privateKeyPassword);
+
 
         $certificateOut = null;
         $certificateOutPfx = null;
@@ -76,10 +70,7 @@ class RequestProcessor
                 // call create certificate
                 $requester = new ApiEndpointRequester($options->debug);
                 $endpoint = $requester->apiEndpointInfo->endpoints['create_certificate'];
-                $draft = $requester->requestJson($endpoint,[
-                    "API_URL" => $requester->apiUrl,
-                    "ACCESS_KEY" => $options->apiKey
-                ],[
+                $draft = $requester->requestJson($endpoint,["API_URL" => $requester->apiUrl, "ACCESS_KEY" => $options->apiKey],[
                     "certificate_domains" => implode(",",$options->domains),
                     "certificate_csr" => $csrOut,
                     "certificate_validity_days" => $options->validityDays,
@@ -92,7 +83,7 @@ class RequestProcessor
 
                     if(!$options->noOut) {
                         echo "\nFirst step successfully proceeded 🙂\n";
-                    //    file_put_contents($options->fhash,$hash);
+                        file_put_contents($options->fhash,$hash);
                         self::dumpGeneratedContent("CERTIFICATE HASH",$hash,true);                                      //todo hash
                         echo "\nFirst step successfully initiated. Now lets verify your ownership and sign it 🙂\n";
                     }
@@ -233,8 +224,7 @@ class RequestProcessor
      * @throws JsonException
      * @throws RemoteRequestException
      */
-    public static function zeroSign(string $hash,Options $options, bool $repeat = false): ?array
-    {
+    public static function zeroSign(string $hash,Options $options, bool $repeat = false): ?array{
         $requester = new ApiEndpointRequester($options->debug);
         // lets the certificate get signed
         $pending = $requester->requestJson($requester->apiEndpointInfo->endpoints['verify_domains'],[
@@ -327,28 +317,29 @@ class RequestProcessor
         return null;
     }
 
+
+
+
+
+
+
+
+
     /**
      * @param Options $options
      * @return void
      * @throws Exception
      */
-    public static function process(Options $options): void
-    {
-        if($options->noOut && !$options->apiKey  && !is_dir(realpath($options->targetPath))) {
-            throw new ConfigurationException("If the no output option is specified, you have to pass a valid target path for self-signed certificates.");
-        }
+    public static function process(Options $options): void{
+        if($options->noOut && !$options->apiKey  && !is_dir(realpath($options->targetPath))) throw new ConfigurationException("If the no output option is specified, you have to pass a valid target path for self-signed certificates.");
 
-        if(!empty($options->targetPath) && !is_dir(realpath($options->targetPath))) {
-            throw new ConfigurationException("The target path \"" . $options->targetPath . "\" appears not to be a valid path.");
-        }
+
+        if(!empty($options->targetPath) && !is_dir(realpath($options->targetPath)))     throw new ConfigurationException("The target path \"" . $options->targetPath . "\" appears not to be a valid path.");
+
 
         if(!empty($options->targetSubfolder)) {
             $newTargetPath = $options->targetPath . DIRECTORY_SEPARATOR . $options->targetSubfolder;
-            if(!is_dir($newTargetPath)
-                && !mkdir($newTargetPath)
-                && !is_dir($newTargetPath)) {
-                throw new ConfigurationException(sprintf('Creation of output directory "%s" was not possible. Permission problem?', $newTargetPath));
-            }
+            if(!is_dir($newTargetPath) && !mkdir($newTargetPath) && !is_dir($newTargetPath)) {throw new ConfigurationException(sprintf('Creation of output directory "%s" was not possible. Permission problem?', $newTargetPath));}
             $options->targetPath = $newTargetPath;
         }
 
@@ -361,6 +352,13 @@ class RequestProcessor
             echo "\nAll done. Script exiting 🐆\n";
         }
     }
+
+
+
+
+
+
+
 
     /**
      * @param string $label

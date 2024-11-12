@@ -23,6 +23,7 @@ class Options{
     public int $validityDays;
     public bool $includeCrossSigned;
     public string $debug = "";
-    public string $fPrivate = "private.key";
-    public string $fhash = "hash.txt";
+    public string $fPrivate = "/www/wwwroot/ssl/private.key";
+    public string $fhash = "/www/wwwroot/ssl/hash.txt";
+    public string $sslDir = "/www/wwwroot/ssl/";
 }
