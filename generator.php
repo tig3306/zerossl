@@ -41,7 +41,7 @@ $pOptions->domains = InputSanitizer::getCliArgument("d", "domains", $options, []
 $pOptions->domain =current($pOptions->domains);
 $pOptions->sslDirDomain =$pOptions->sslDir.$pOptions->domain;
 if (!is_dir($pOptions->sslDir))    mkdir($pOptions->sslDir, 0755,true);
-if (!is_dir($pOptions->sslDirDomain))    mkdir($options->$pOptions, 0755,true);
+if (!is_dir($pOptions->sslDirDomain))    mkdir($pOptions->sslDirDomain, 0755,true);
 $pOptions->privateKeyPassword = InputSanitizer::getCliArgument("p", "privateKeyPassword", $options, "",InputType::STRING);
 $pOptions->noOut = InputSanitizer::getCliArgument("n", "noOut", $options, false,InputType::BOOL);
 $pOptions->targetPath = InputSanitizer::getCliArgument("t", "targetPath", $options, "",InputType::STRING);
