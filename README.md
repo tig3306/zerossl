@@ -85,13 +85,17 @@ ds=(
 "103.24.207.49"
 "103.24.207.50"
 )
+
+
 for D in "${ds[@]}"
 do
     php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/${D}/" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
     echo ${D}
 done
-D="103.24.7.3"
-php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/${D}/" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
+D="103.24.207.1"
+mkdir -p /www/wwwroot/ssl/${D}/
+php generator.php --apiKey="66a86c386677c5de0d3d022687e7022e" -m="HTTP_CSR_HASH" --targetPath="/www/wwwroot/ssl/${D}/" --domains=${D} --csrData="countryName=AT&stateOrProvinceName=Vienna&localityName=Vienna&organizationName=CLI%20Operations&emailAddress=hu20240414@proton.me"
+   
    
 
 ```
@@ -112,4 +116,56 @@ php del.php
 git pull origin main
 cat ~/.bashrc
 cat ip.txt
+```
+
+
+
+
+
+
+###test
+```shell
+以下是修改后的代码，可以删除带有$'\n'的目录：
+
+ds=(
+"103.24.207.1"
+"103.24.207.2"
+"103.24.207.3"
+"103.24.207.4"
+"103.24.207.5"
+"103.24.207.6"
+"103.24.207.7"
+"103.24.207.8"
+"103.24.207.9"
+"103.24.207.10"
+"103.24.207.11"
+"103.24.207.12"
+"103.24.207.13"
+"103.24.207.30"
+"103.24.207.31"
+"103.24.207.32"
+"103.24.207.33"
+"103.24.207.34"
+"103.24.207.35"
+"103.24.207.36"
+"103.24.207.37"
+"103.24.207.38"
+"103.24.207.39"
+"103.24.207.40"
+"103.24.207.41"
+"103.24.207.42"
+"103.24.207.43"
+"103.24.207.45"
+"103.24.207.46"
+"103.24.207.47"
+"103.24.207.49"
+"103.24.207.50"
+)
+for D in "${ds[@]}"
+do
+    rm -r "${D//[$'\n']}"
+done
+
+
+
 ```

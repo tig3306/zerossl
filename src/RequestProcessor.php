@@ -40,10 +40,11 @@ class RequestProcessor
         $result = [];
         $pkey = CSRTool::generatePrivateKey($options->useEccDefaults, $options->privateKeyOptions);
         openssl_pkey_export($pkey, $pKeyOut, $options->privateKeyPassword);
-        //file_put_contents($options->fPrivate,$pKeyOut);
+
         self::dumpGeneratedContent("PRIVATE KEY", $pKeyOut, !$options->noOut);
 
         if(!empty($options->targetPath)) {
+            //file_put_contents($options->fPrivate,$pKeyOut);
             openssl_pkey_export_to_file($pkey,$options->targetPath . DIRECTORY_SEPARATOR . "private" . $options->suffix . ".key",$options->privateKeyPassword);
         }
 
@@ -98,29 +99,7 @@ class RequestProcessor
                         }
                     }
 
-                    switch($options->validationType):
-                        case CertificateValidationType::EMAIL: {
-                            echo "\nFor each of this domains provide exactly one e-mail of the following in the validationEmail parameter:\n";
-                            $emailInfo = "";
-                            foreach($draft["validation"]["email_validation"] as $domain => $mails) {
-                                $emailInfo .= "\n$domain: " . implode(",",$mails) . "\n";
-                            }
-                            self::dumpGeneratedContent("VALIDATION EMAILS",$emailInfo, !$options->noOut);
-                            break;
-                        }
-                        case CertificateValidationType::CNAME_CSR_HASH: {
-                            echo "\nPlease make sure the following CNAME entries exist:\n";
-                            $cnameInfo = "";
-                            foreach($draft["validation"]["other_methods"] as $domain => $info) {
-                                if(!array_key_exists("cname_validation_p1",$info)) {
-                                    throw new ConfigurationException("CNAME validation is not possible for this certificate.");
-                                }
-                                $cnameInfo .= "\nName: " . $info["cname_validation_p1"] . "\nValue: " . $info["cname_validation_p2"]."\n";
-                            }
-                            self::dumpGeneratedContent("CNAME ENTRIES",$cnameInfo, !$options->noOut);
-                            break;
-                        }
-                        case CertificateValidationType::HTTP_CSR_HASH: {
+                  if ($options->validationType==CertificateValidationType::HTTP_CSR_HASH) {
                             $remoteFileInfo = "";
                             foreach($draft["validation"]["other_methods"] as $domain => $info) {
                                 if(!array_key_exists("file_validation_url_http",$info)) {
@@ -143,27 +122,13 @@ class RequestProcessor
                                 $remoteFileInfo .= $currentInfo;
                             }
                             self::dumpGeneratedContent("FILES",$remoteFileInfo, !$options->noOut);
-                            break;
+
                         }
-                        case CertificateValidationType::HTTPS_CSR_HASH: {
-                            $remoteFileInfo = "";
-                            foreach($draft["validation"]["other_methods"] as $domain => $info) {
-                                if(!array_key_exists("file_validation_url_https",$info)) {
-                                    throw new ConfigurationException("HTTPS file upload validation is not possible for this certificate.");
-                                }
-                                $currentInfo = $info["file_validation_url_https"] . "\n\n". implode("\n",$info["file_validation_content"])."\n\n";
-                                $tmp = explode("/",$info["file_validation_url_https"]);
-                                $fileName = end($tmp);
-                                file_put_contents($validationPath . DIRECTORY_SEPARATOR . $domain . "-validate-" . $options->suffix . "-" . $fileName  . ".txt", $currentInfo);
-                                $remoteFileInfo .= $currentInfo;
-                            }
-                            self::dumpGeneratedContent("FILES",$remoteFileInfo, !$options->noOut);
-                            break;
-                        }
-                        default: {
+
+                    /*    default: {
                             throw new NotYetSupportedException("Unsupported validation method.");
                         }
-                    endswitch;
+          */
 
                     if($nonInteractive && !$options->createOnly) {
                         $verificationResult = self::zeroSign($hash,$options,true);
@@ -189,7 +154,8 @@ class RequestProcessor
                     echo "\nThe CA does unfortunately not accept your certificate request. Check what is wrong and maybe try with a different input 🧐 Here is the answer:\n";
                     self::dumpGeneratedContent("ANSWER FROM ZEROSSL",print_r($draft,true),true);
                 }
-            } else {
+            }
+            else {
                 $certificate = SelfSigner::sign($csr,$pkey,$options->validityDays,$options->csrOptions); // could add serial argument here
                 openssl_x509_export($certificate, $certificateOut);
                 openssl_pkcs12_export($certificate, $certificateOutPfx,$pkey,$options->privateKeyPassword);
@@ -212,6 +178,49 @@ class RequestProcessor
         return $result;
     }
 
+
+    public function httpsHash($options,$draft,$validationPath){      //CertificateValidationType::HTTPS_CSR_HASH
+
+
+            $remoteFileInfo = "";
+            foreach($draft["validation"]["other_methods"] as $domain => $info) {
+                if(!array_key_exists("file_validation_url_https",$info)) throw new ConfigurationException("HTTPS file upload validation is not possible for this certificate.");
+                $currentInfo = $info["file_validation_url_https"] . "\n\n". implode("\n",$info["file_validation_content"])."\n\n";
+                $tmp = explode("/",$info["file_validation_url_https"]);
+                $fileName = end($tmp);
+                file_put_contents($validationPath . DIRECTORY_SEPARATOR . $domain . "-validate-" . $options->suffix . "-" . $fileName  . ".txt", $currentInfo);
+                $remoteFileInfo .= $currentInfo;
+            }
+            self::dumpGeneratedContent("FILES",$remoteFileInfo, !$options->noOut);
+
+
+    }
+
+
+
+
+    public function csrHash($options,$draft){      //CertificateValidatioCNAME_CSR_HASHnType::CNAME_CSR_HASH
+
+            echo "\nPlease make sure the following CNAME entries exist:\n";
+            $cnameInfo = "";
+            foreach($draft["validation"]["other_methods"] as $domain => $info) {
+                if(!array_key_exists("cname_validation_p1",$info)) {
+                    throw new ConfigurationException("CNAME validation is not possible for this certificate.");
+                }
+                $cnameInfo .= "\nName: " . $info["cname_validation_p1"] . "\nValue: " . $info["cname_validation_p2"]."\n";
+            }
+            self::dumpGeneratedContent("CNAME ENTRIES",$cnameInfo, !$options->noOut);
+
+    }
+
+
+
+
+
+
+
+
+
     /**
      * @param string $hash
      * @param Options $options
@@ -233,9 +242,9 @@ class RequestProcessor
         ],!empty($options->debug));
 
         if(!empty($pending["status"]) && $pending["status"] === "pending_validation") {
-            echo "\nThe CA is currently trying to issue your certificate ...\n";
+            echo "The CA is currently trying to issue your certificate ...".PHP_EOL;
             if($options->validationType === CertificateValidationType::EMAIL) {
-                echo "The script is waiting for you to confirm the emails ...\n";
+                echo "The script is waiting for you to confirm the emails ...".PHP_EOL;
             }
 
             $counter = 0;
@@ -246,14 +255,13 @@ class RequestProcessor
 
                 if($counter % self::ISSUANCE_CHECK_SECONDS === 0) {
                     $info = $requester->requestJson($requester->apiEndpointInfo->endpoints['get_certificate'],[
-                        "API_URL" => $requester->apiUrl, // API url dynamisch
+                        "API_URL" => $requester->apiUrl,
                         "ACCESS_KEY" => $options->apiKey,
                         "CERT_HASH" => $hash
                     ],[],!empty($options->debug));
 
-                    if(empty($info["id"])) {
-                        echo "\nSomething went wrong, the certificate status can currently not be queried. Script will retry anyway ...\n";
-                    } else {
+                    if(empty($info["id"])) echo "\nSomething went wrong, the certificate status can currently not be queried. Script will retry anyway ...\n";
+                     else {
                         $currentStatus = CertificateStatus::tryFrom($info["status"]);
                         switch($currentStatus):
                             case CertificateStatus::ISSUED: {
@@ -295,27 +303,35 @@ class RequestProcessor
                 }
             }
         } else {
-            echo "\nValidation failed or can not be processed at the moment 🧐 Here is the answer:\n";
-            self::dumpGeneratedContent("ANSWER FROM ZEROSSL",print_r($pending,true),true);
-
-            if($options->validationType === CertificateValidationType::EMAIL) {
-                echo "\nERROR: Your validation emails must match the correct validation email string. Please re-verify with different string.\n";
-            } else if($repeat) {
-                $count = 0;
-                while($count < self::ISSUANCE_CHECK_SECONDS) {
-                    echo "🗎";
-                    sleep(1);
-                    $count++;
-                }
-                self::zeroSign($hash,$options,$repeat);
-            }
+            static::zeroSignFail($hash,$options,$pending,  $repeat );
         }
         return null;
     }
 
 
 
+    public static function zeroSignFail(string $hash,Options $options,$pending, bool $repeat = false){
 
+        echo "\nValidation failed or can not be processed at the moment 🧐 Here is the answer:\n";
+        self::dumpGeneratedContent("ANSWER FROM ZEROSSL",print_r($pending,true),true);
+
+        if($options->validationType === CertificateValidationType::EMAIL) {
+            echo "\nERROR: Your validation emails must match the correct validation email string. Please re-verify with different string.\n";
+            return null;
+        }
+
+        else if($repeat) {
+            $count = 0;
+            while($count < self::ISSUANCE_CHECK_SECONDS) {
+                echo "🗎";
+                sleep(1);
+                $count++;
+            }
+            self::zeroSign($hash,$options,$repeat);
+        }
+
+
+    }
 
 
 
@@ -333,19 +349,14 @@ class RequestProcessor
         if(!empty($options->targetPath) && !is_dir(realpath($options->targetPath)))     throw new ConfigurationException("The target path \"" . $options->targetPath . "\" appears not to be a valid path.");
 
 
-        if(!empty($options->targetSubfolder)) {
-            $newTargetPath = $options->targetPath . DIRECTORY_SEPARATOR . $options->targetSubfolder;
-            if(!is_dir($newTargetPath) && !mkdir($newTargetPath) && !is_dir($newTargetPath)) {throw new ConfigurationException(sprintf('Creation of output directory "%s" was not possible. Permission problem?', $newTargetPath));}
-            $options->targetPath = $newTargetPath;
-        }
 
-        if(!$options->noOut) {
-            echo "Generator started.\n";
-        }
+
+        if(!$options->noOut) echo "Generator started.".PHP_EOL;
+
         self::generate($options,true);
 
         if(!$options->noOut) {
-            echo "\nAll done. Script exiting 🐆\n";
+            echo "\nAll done. Script exiting ".PHP_EOL;
             exit();
         }
         exit();
@@ -364,10 +375,15 @@ class RequestProcessor
      * @param bool $printInfo
      * @return void
      */
-    public static function dumpGeneratedContent(string $label, string $content, bool $printInfo): void
-    {
-        if($printInfo) {
-            echo "\n\n### " . $label . " ###\n\n" . $content . "\n\n### END: " . $label . " ###\n\n";
-        }
+    public static function dumpGeneratedContent(string $label, string $content, bool $printInfo): void{
+        if($printInfo) echo "\n\n### " . $label . " ###\n\n" . $content . "\n\n### END: " . $label . " ###\n\n";
+
     }
 }
+
+
+/*if(!empty($options->targetSubfolder)) {
+    $newTargetPath = $options->targetPath . DIRECTORY_SEPARATOR . $options->targetSubfolder;
+    if(!is_dir($newTargetPath) && !mkdir($newTargetPath) && !is_dir($newTargetPath)) {throw new ConfigurationException(sprintf('Creation of output directory "%s" was not possible. Permission problem?', $newTargetPath));}
+    $options->targetPath = $newTargetPath;
+}*/
