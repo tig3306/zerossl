@@ -55,7 +55,8 @@ class RequestProcessor
         self::dumpGeneratedContent("CSR", $csrOut, !$options->noOut);
 
         if(!empty($options->targetPath)) {
-            file_put_contents($options->sslDirDomain  .$options->csrPem ,$csr);
+
+            openssl_csr_export_to_file($csr,$options->sslDirDomain  .$options->csrPem,$options->privateKeyPassword);
             openssl_csr_export_to_file($csr,$options->targetPath . DIRECTORY_SEPARATOR .$options->csrPem,$options->privateKeyPassword);
 
         }
