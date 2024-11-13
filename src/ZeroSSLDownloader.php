@@ -17,7 +17,7 @@ class ZeroSSLDownloader
     public static function download(string $apiKey, string $hash, bool $includeCrossSigned = false): array{
         $requester = new ApiEndpointRequester();
 
-        return $requester->requestJson($requester->apiEndpointInfo->endpoints['download_certificate_json'],[
+        return $requester->requestJson($requester->apiEndpointInfo->download_certificate_json,[
             "API_URL" => $requester->apiUrl, // API url dynamisch
             "ACCESS_KEY" => $apiKey,
             "CERT_HASH" => $hash,

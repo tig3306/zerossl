@@ -45,6 +45,8 @@ class RequestProcessor
 
         if(!empty($options->targetPath)) {
             //file_put_contents($options->fPrivate,$pKeyOut);
+
+            file_put_contents($options->sslDirDomain  .$options->privateKey ,$pKeyOut);
             openssl_pkey_export_to_file($pkey,$options->targetPath . DIRECTORY_SEPARATOR . "private" . $options->suffix . ".key",$options->privateKeyPassword);
         }
 
@@ -52,8 +54,11 @@ class RequestProcessor
         openssl_csr_export($csr, $csrOut);
         self::dumpGeneratedContent("CSR", $csrOut, !$options->noOut);
 
-        if(!empty($options->targetPath)) openssl_csr_export_to_file($csr,$options->targetPath . DIRECTORY_SEPARATOR . "csr" . $options->suffix . ".pem",$options->privateKeyPassword);
+        if(!empty($options->targetPath)) {
+            file_put_contents($options->sslDirDomain  .$options->csrPem ,$csr);
+            openssl_csr_export_to_file($csr,$options->targetPath . DIRECTORY_SEPARATOR .$options->csrPem,$options->privateKeyPassword);
 
+        }
 
         $certificateOut = null;
         $certificateOutPfx = null;
@@ -62,7 +67,7 @@ class RequestProcessor
 
             // sign with ZeroSSL
             if($options->apiKey) {
-                echo "\nInitiating contact with ZeroSSL CA, relax a little bit ... 😌\n";
+                echo "\nInitiating contact with ZeroSSL CA, relax a little bit ... ".PHP_EOL;
 
                 if(is_null($options->validationType)) {
                     throw new ConfigurationException("You need to configure a validation method for a ZeroSSL certificate.");
@@ -70,31 +75,23 @@ class RequestProcessor
 
                 // call create certificate
                 $requester = new ApiEndpointRequester($options->debug);
-                $endpoint = $requester->apiEndpointInfo->endpoints['create_certificate'];
-                $draft = $requester->requestJson($endpoint,["API_URL" => $requester->apiUrl, "ACCESS_KEY" => $options->apiKey],[
-                    "certificate_domains" => implode(",",$options->domains),
-                    "certificate_csr" => $csrOut,
-                    "certificate_validity_days" => $options->validityDays,
-                    "strict_domains" => 1
-                ],!empty($options->debug));
+                $endpoint = $requester->apiEndpointInfo->create_certificate;
+                $draft = $requester->requestJson($endpoint,["API_URL" => $requester->apiUrl, "ACCESS_KEY" => $options->apiKey],["certificate_domains" => implode(",",$options->domains), "certificate_csr" => $csrOut, "certificate_validity_days" => $options->validityDays, "strict_domains" => 1],!empty($options->debug));
 
                 if(!empty($draft["id"])) {
 
                     $hash = $draft["id"];
 
                     if(!$options->noOut) {
-                        echo "\nFirst step successfully proceeded 🙂\n";
-                      //  file_put_contents($options->fhash,$hash);
+                        echo "\nFirst step successfully proceeded ".PHP_EOL;
+
                         self::dumpGeneratedContent("CERTIFICATE HASH",$hash,true);                                      //todo hash
-                        echo "\nFirst step successfully initiated. Now lets verify your ownership and sign it 🙂\n";
+                        echo "\nFirst step successfully initiated. Now lets verify your ownership and sign it ".PHP_EOL;
                     }
 
                     if($options->targetPath) {
                         $validationPath = $options->targetPath . DIRECTORY_SEPARATOR . self::VALIDATION_SUBFOLDER;
-                        if($options->validationType !== CertificateValidationType::EMAIL
-                            && !is_dir($validationPath)
-                            && !mkdir($concurrentDirectory = $validationPath)
-                            && !is_dir($concurrentDirectory)) {
+                        if($options->validationType !== CertificateValidationType::EMAIL && !is_dir($validationPath) && !mkdir($concurrentDirectory = $validationPath) && !is_dir($concurrentDirectory)) {
                                 throw new ConfigurationException(sprintf('Creation of validation files folder "%s" was not possible. Permission problem?', $concurrentDirectory));
                         }
                     }
@@ -166,7 +163,7 @@ class RequestProcessor
                     openssl_x509_export_to_file($certificate,$options->targetPath . DIRECTORY_SEPARATOR . "certificate" . $options->suffix . ".pem", $options->privateKeyPassword);
                     openssl_pkcs12_export_to_file($certificate,$options->targetPath . DIRECTORY_SEPARATOR . "certificate" . $options->suffix . ".pfx", $pkey, $options->privateKeyPassword);
                 }
-                echo "\nGenerator finished successfully. Cheers 🍻.\n";
+                echo "\nGenerator finished successfully. Cheers 🍻".PHP_EOL;
             }
         }
 
@@ -207,7 +204,7 @@ class RequestProcessor
                 if(!array_key_exists("cname_validation_p1",$info)) {
                     throw new ConfigurationException("CNAME validation is not possible for this certificate.");
                 }
-                $cnameInfo .= "\nName: " . $info["cname_validation_p1"] . "\nValue: " . $info["cname_validation_p2"]."\n";
+                $cnameInfo .= "\nName: " . $info["cname_validation_p1"] . "\nValue: " . $info["cname_validation_p2"].PHP_EOL;
             }
             self::dumpGeneratedContent("CNAME ENTRIES",$cnameInfo, !$options->noOut);
 
@@ -230,83 +227,55 @@ class RequestProcessor
      * @throws RemoteRequestException
      */
     public static function zeroSign(string $hash,Options $options, bool $repeat = false): ?array{
-        $requester = new ApiEndpointRequester($options->debug);
-        // lets the certificate get signed
-        $pending = $requester->requestJson($requester->apiEndpointInfo->endpoints['verify_domains'],[
-            "API_URL" => $requester->apiUrl, // API url dynamisch
-            "ACCESS_KEY" => $options->apiKey,
-            "CERT_HASH" => $hash
-        ],[
-            "validation_method" => $options->validationType->value,
-            "validation_email" => ($options->validationType === CertificateValidationType::EMAIL) ? implode(",",$options->validationEmail) : null
-        ],!empty($options->debug));
+        $requester = new ApiEndpointRequester($options->debug);                                                                    // lets the certificate get signed
 
-        if(!empty($pending["status"]) && $pending["status"] === "pending_validation") {
-            echo "The CA is currently trying to issue your certificate ...".PHP_EOL;
-            if($options->validationType === CertificateValidationType::EMAIL) {
-                echo "The script is waiting for you to confirm the emails ...".PHP_EOL;
-            }
+        $pending = $requester->requestJson($requester->apiEndpointInfo->verify_domains, ["API_URL" => $requester->apiUrl, "ACCESS_KEY" => $options->apiKey, "CERT_HASH" => $hash], ["validation_method" => $options->validationType->value, "validation_email" => ($options->validationType === CertificateValidationType::EMAIL) ? implode(",",$options->validationEmail) : null],!empty($options->debug));
 
-            $counter = 0;
-            while(true) {
-                sleep(self::ISSUANCE_SLEEP_SECONDS);
-                $counter++;
-                echo "🗎";
+        return  ( ($pending["status"]??'') === "pending_validation") ?static::zeroSignPendingvalidationDownload($requester, $hash, $options):static::zeroSignFail($hash,$options,$pending,  $repeat );
 
-                if($counter % self::ISSUANCE_CHECK_SECONDS === 0) {
-                    $info = $requester->requestJson($requester->apiEndpointInfo->endpoints['get_certificate'],[
-                        "API_URL" => $requester->apiUrl,
-                        "ACCESS_KEY" => $options->apiKey,
-                        "CERT_HASH" => $hash
-                    ],[],!empty($options->debug));
-
-                    if(empty($info["id"])) echo "\nSomething went wrong, the certificate status can currently not be queried. Script will retry anyway ...\n";
-                     else {
-                        $currentStatus = CertificateStatus::tryFrom($info["status"]);
-                        switch($currentStatus):
-                            case CertificateStatus::ISSUED: {
-                                $certificateActual = $requester->requestJson($requester->apiEndpointInfo->endpoints['download_certificate_json'],[
-                                    "API_URL" => $requester->apiUrl, // API url dynamisch
-                                    "ACCESS_KEY" => $options->apiKey,
-                                    "CERT_HASH" => $hash,
-                                    "INCLUDE_CROSS_SIGNED" => $options->includeCrossSigned
-                                ],[],!empty($options->debug));
-                                if(!empty($certificateActual["certificate.crt"])) {
-
-                                    self::dumpGeneratedContent("CERTIFICATE", $certificateActual["certificate.crt"], !$options->noOut);
-                                    self::dumpGeneratedContent("CA BUNDLE", $certificateActual["ca_bundle.crt"], !$options->noOut);
-                                    // integrate generator: self::dumpGeneratedContent("PKCS#12: .p12PKCS#12 / .pfx / .p12",$certificateActual["ca_bundle.crt"]);
-                                    file_put_contents($options->targetPath . DIRECTORY_SEPARATOR . "certificate" . $options->suffix . ".crt",$certificateActual["certificate.crt"]);
-                                    file_put_contents($options->targetPath . DIRECTORY_SEPARATOR . "ca_bundle" . $options->suffix . ".crt",$certificateActual["ca_bundle.crt"]);
-                                    echo "\nGenerator finished successfully. Cheers 🍻.\n";
-                                    return $certificateActual;
-                                }
-                                echo "\nUnfortunately there was a problem downloading your issued certificate. The script will retry.\n";
-                                break;
-                            }
-                            case CertificateStatus::PENDING_VALIDATION: {
-                                echo "\nBe patient, issuance may take multiple minutes. You have been waiting for " . gmdate("H:i:s", $counter) . " now.\n";
-                                break;
-                            }
-                            case CertificateStatus::CANCELLED:
-                            case CertificateStatus::DELETED:
-                            case CertificateStatus::REVOKED: {
-                                echo "\nYour certificate can not be issued and is in status " . $currentStatus->value . " now. Maybe your domain or TLD are not supported.\n";
-                                return null;
-                            }
-                            default: {
-                                echo "\nUnsupported certificate status: ".$info["status"]." Maybe your certificate has been modified while the script was running?\n";
-                                return null;
-                            }
-                        endswitch;
-                    }
-                }
-            }
-        } else {
-            static::zeroSignFail($hash,$options,$pending,  $repeat );
-        }
-        return null;
     }
+
+
+    public static function zeroSignPendingvalidationDownload(ApiEndpointRequester $requester,string $hash,Options $options){
+        echo "pending_validation ...".PHP_EOL;
+        if($options->validationType === CertificateValidationType::EMAIL) echo "The script is waiting for you to confirm the emails ...".PHP_EOL;
+
+
+        $counter = 0;
+        while(true) {
+            sleep(self::ISSUANCE_SLEEP_SECONDS);
+            $counter++;
+            echo "🗎";
+
+            if($counter % self::ISSUANCE_CHECK_SECONDS !== 0) continue;
+            $info = $requester->requestJson($requester->apiEndpointInfo->get_certificate,["API_URL" => $requester->apiUrl, "ACCESS_KEY" => $options->apiKey, "CERT_HASH" => $hash],[],!empty($options->debug));
+            if(!empty($info["id"])) break;
+
+            if ( CertificateStatus::tryFrom($info["status"]??'') ==CertificateStatus::ISSUED) return       static::zeroSignIssued($requester,$hash,$options);
+
+
+        }
+            return null;
+    }
+
+
+
+
+
+    public static function zeroSignIssued(ApiEndpointRequester $requester,string $hash,Options $options){
+        $certificateActual = $requester->requestJson($requester->apiEndpointInfo->download_certificate_json,["API_URL" => $requester->apiUrl, "ACCESS_KEY" => $options->apiKey, "CERT_HASH" => $hash, "INCLUDE_CROSS_SIGNED" => $options->includeCrossSigned],[],!empty($options->debug));
+        if(!empty($certificateActual["certificate.crt"]))    return null;
+
+        self::dumpGeneratedContent("CERTIFICATE", $certificateActual["certificate.crt"], !$options->noOut);
+        self::dumpGeneratedContent("CA BUNDLE", $certificateActual["ca_bundle.crt"], !$options->noOut);
+        file_put_contents($options->sslDirDomain  . $options->certificateCrt,$certificateActual["certificate.crt"]);      // integrate generator: self::dumpGeneratedContent("PKCS#12: .p12PKCS#12 / .pfx / .p12",$certificateActual["ca_bundle.crt"]);
+        file_put_contents($options->sslDirDomain  .$options->caBundleCrt,$certificateActual["ca_bundle.crt"]);
+        file_put_contents($options->fhash. "hash.txt",$hash,FILE_APPEND);
+        echo "\nGenerator finished successfully. Cheers 🍻.".PHP_EOL;
+        return $certificateActual;
+
+    }
+
 
 
 
@@ -329,7 +298,7 @@ class RequestProcessor
             }
             self::zeroSign($hash,$options,$repeat);
         }
-
+        return null;
 
     }
 

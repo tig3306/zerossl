@@ -6,6 +6,7 @@ use ZeroSSL\CliClient\Enum\CertificateValidationType;
 
 class Options{
     public array $domains;
+    public string $domain;
     public string $privateKeyPassword;
     public bool $noOut;
     public ?string $targetPath;
@@ -23,7 +24,13 @@ class Options{
     public int $validityDays;
     public bool $includeCrossSigned;
     public string $debug = "";
-    public string $fPrivate = "/www/wwwroot/ssl/private.key";
+
     public string $fhash = "/www/wwwroot/ssl/hash.txt";
     public string $sslDir = "/www/wwwroot/ssl/";
+    public string $sslDirDomain ;
+    public string $caBundleCrt="ca_bundle.crt";
+    public string $privateKey= "private_me.key";
+    public string $csrPem= "csr.pem";
+    public string $certificateCrt="certificate.crt";
+
 }

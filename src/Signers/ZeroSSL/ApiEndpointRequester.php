@@ -45,8 +45,7 @@ class ApiEndpointRequester
      * @return string
      * @throws RemoteRequestException
      */
-    public function request(ApiEndpoint $endpoint, array $urlParams = [], array|string $params = [],$insecureDebug = false): string
-    {
+    public function request(ApiEndpoint $endpoint, array $urlParams = [], array|string $params = [],$insecureDebug = false): string{
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_URL, $this->apiEndpointInfo->getPopulatedEndpointUrl($endpoint, $urlParams));

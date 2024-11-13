@@ -38,4 +38,8 @@ $ds=[
 }*/
 
 $line=1;
-echo "/www/wwwroot/{$line}/io";
+//echo "/www/wwwroot/{$line}/io";
+$array = [1, 2, 3, 4, 5];
+$firstElement = current($array);
+var_dump($array);
+echo $firstElement; // 输出：1
