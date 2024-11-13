@@ -39,7 +39,7 @@ $options = getopt($short_options, $long_options);
 $pOptions = new Options();
 $pOptions->domains = InputSanitizer::getCliArgument("d", "domains", $options, [], InputType::DOMAINS);
 $pOptions->domain =current($pOptions->domains);
-$pOptions->sslDirDomain =$pOptions->sslDir.$pOptions->domain;
+$pOptions->sslDirDomain =$pOptions->sslDir.$pOptions->domain.DIRECTORY_SEPARATOR;
 if (!is_dir($pOptions->sslDir))    mkdir($pOptions->sslDir, 0755,true);
 if (!is_dir($pOptions->sslDirDomain))    mkdir($pOptions->sslDirDomain, 0755,true);
 $pOptions->privateKeyPassword = InputSanitizer::getCliArgument("p", "privateKeyPassword", $options, "",InputType::STRING);
